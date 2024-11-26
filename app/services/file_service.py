@@ -119,4 +119,12 @@ def delete_file(db: Session, file_id: int) -> bool:
 
 
 def list_files(db: Session) -> List[File]:
+    """Gets a list of all files.
+
+    `Args`:
+        db (Session): An object for interacting with the database
+
+    `Returns`:
+        List[File]: List of file objects
+    """
     return db.query(File).all()
