@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.file import File
-from app.schemas.file import FileCreate
+from app.schemas.file import FileGet, FileCreate, FileUpdate
 
 
 def create_file(db: Session, file_data: FileCreate) -> File:
@@ -27,11 +27,15 @@ def create_file(db: Session, file_data: FileCreate) -> File:
 
     if file_path.exists():
         raise FileExistsError(f'File `{file_data.fname}` already exists.')
+
     with file_path.open('w') as f:
-        f.write('')
+        if file_data.content:
+            f.write(file_data.content)
+
     fsize = file_path.stat().st_size
     mdt = dt.now()
     new_file_data = file_data.model_dump()
+    new_file_data.pop('content', None)
     new_file_data.update({'fsize': fsize, 'mdt': mdt})
     new_file = File(**new_file_data)
     db.add(new_file)
@@ -56,14 +60,30 @@ def get_file(db: Session, file_id: int) -> Union[File, None]:
     return file
 
 
+def get_file_with_content(db: Session, file_id: int) -> Union[FileGet, None]:
+    """Gets file data along with its contents by its id.
+
+    `Args`:
+        db (Session): An object for interacting with the database
+        file_id (int): Unique file identifier
+
+    `Returns`:
+        Union[FileGet, None]: File with actual content if exist, else None
+    """
+    file = get_file(db, file_id)
+    if not file:
+        return None
+    return FileGet.from_orm(file)
+
+
 def update_file(db: Session, file_id: int,
-                file_data: FileCreate) -> Union[File, None]:
+                file_data: FileUpdate) -> Union[File, None]:
     """Changes the file selected by ID.
 
     `Args`:
         db (Session): An object for interacting with the database
         file_id (int): Unique file identifier
-        file_data (FileCreate): Data to update a file
+        file_data (FileUpdate): Data to update a file
 
     `Returns`:
         Union[File, None]: File if exist, else None
@@ -71,24 +91,26 @@ def update_file(db: Session, file_id: int,
     file = get_file(db, file_id)
     if file is None:
         return None
-    storage_path = Path(settings.FILE_STORAGE_PATH)
-    old_file_path = storage_path / file.fname
-    new_file_path = storage_path / file_data.fname
 
-    if file.fname != file_data.fname:
-        if old_file_path.exists():
-            old_file_path.rename(new_file_path)
-        else:
-            raise FileNotFoundError(
-                f'File `{file.fname}` not found in storage.'
-            )
+    new_fname = file_data.fname if file_data.fname is not None else file.fname
+    if file_data.content is not None:
+        new_content = file_data.content
+    else:
+        new_content = Path(
+            settings.FILE_STORAGE_PATH, file.fname
+        ).read_text()
 
-    mdt = dt.now()
-    file.fname = file_data.fname
-    file.mdt = mdt
+    if new_fname != file.fname:
+        old_path = Path(settings.FILE_STORAGE_PATH, file.fname)
+        new_path = Path(settings.FILE_STORAGE_PATH, new_fname)
+        old_path.rename(new_path)
+        file.fname = new_fname
 
-    for key, value in file_data.model_dump().items():
-        setattr(file, key, value)
+    file_path = Path(settings.FILE_STORAGE_PATH, file.fname)
+    file_path.write_text(new_content)
+
+    file.mdt = dt.now()
+    file.fsize = file_path.stat().st_size
 
     db.commit()
     db.refresh(file)
