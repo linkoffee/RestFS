@@ -1,13 +1,11 @@
-import os
 from datetime import datetime as dt
-from pathlib import Path
 from typing import Union, List
 
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.models.file import File
 from app.schemas.file import FileGet, FileCreate, FileUpdate
+from app.utils.security import secure_path
 
 
 def create_file(db: Session, file_data: FileCreate) -> File:
@@ -20,10 +18,7 @@ def create_file(db: Session, file_data: FileCreate) -> File:
     `Returns`:
         File: File with the specified name
     """
-    storage_path = Path(settings.FILE_STORAGE_PATH)
-    storage_path.mkdir(parents=True, exist_ok=True)
-
-    file_path = storage_path / file_data.fname
+    file_path = secure_path(file_data.fname)
 
     if file_path.exists():
         raise FileExistsError(f'File `{file_data.fname}` already exists.')
@@ -92,25 +87,25 @@ def update_file(db: Session, file_id: int,
     if file is None:
         return None
 
-    new_fname = file_data.fname if file_data.fname is not None else file.fname
+    old_file_path = secure_path(file.fname)
+    if file_data.fname:
+        new_file_path = secure_path(file_data.fname)
+    else:
+        new_file_path = old_file_path
+
     if file_data.content is not None:
         new_content = file_data.content
     else:
-        new_content = Path(
-            settings.FILE_STORAGE_PATH, file.fname
-        ).read_text()
+        new_content = old_file_path.read_text()
 
-    if new_fname != file.fname:
-        old_path = Path(settings.FILE_STORAGE_PATH, file.fname)
-        new_path = Path(settings.FILE_STORAGE_PATH, new_fname)
-        old_path.rename(new_path)
-        file.fname = new_fname
+    if new_file_path != old_file_path:
+        old_file_path.rename(new_file_path)
+        file.fname = new_file_path.name
 
-    file_path = Path(settings.FILE_STORAGE_PATH, file.fname)
-    file_path.write_text(new_content)
+    new_file_path.write_text(new_content)
 
     file.mdt = dt.now()
-    file.fsize = file_path.stat().st_size
+    file.fsize = new_file_path.stat().st_size
 
     db.commit()
     db.refresh(file)
@@ -130,10 +125,10 @@ def delete_file(db: Session, file_id: int) -> bool:
     file = get_file(db, file_id)
     if not file:
         return False
-    file_path = os.path.join(settings.FILE_STORAGE_PATH, file.fname)
+    file_path = secure_path(file.fname)
 
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    if file_path.exists():
+        file_path.unlink()
 
     db.delete(file)
     db.commit()
