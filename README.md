@@ -79,21 +79,24 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "fname": "file.txt"
+  "fname": "new-file.txt",
+  "content": "Hello, i`m new file ^^"
 }'
 ```
 ```json
 {
-  "fname": "file.txt"
+  "fname": "new-file.txt",
+  "content": "Hello, i`m new file ^^"
 }
 ```
 `RESPONSE`
 ```json
 {
   "id": 1,
-  "fname": "file.txt",
-  "fsize": 0,
-  "mdt": "2024-11-26T00:17:54.035191"
+  "fname": "new-file.txt",
+  "fsize": 22,
+  "mdt": "2024-11-27T12:50:22.090538",
+  "content": "Hello, i`m new file ^^"
 }
 ```
 
@@ -110,21 +113,17 @@ curl -X 'GET' \
 [
   {
     "id": 1,
-    "fname": "file.txt",
-    "fsize": 0,
-    "mdt": "2024-11-26T00:17:54.035191"
+    "fname": "old-file.txt",
+    "fsize": 21,
+    "mdt": "2009-06-28T21:32:40.251760",
+    "content": "Very very old file..."
   },
   {
     "id": 2,
-    "fname": "file2.txt",
-    "fsize": 0,
-    "mdt": "2024-11-26T00:19:39.887474"
-  },
-  {
-    "id": 3,
-    "fname": "file3.txt",
-    "fsize": 0,
-    "mdt": "2024-11-26T00:19:49.126967"
+    "fname": "new-file.txt",
+    "fsize": 22,
+    "mdt": "2024-11-27T12:56:55.008335",
+    "content": "Hello, i`m new file ^^"
   }
 ]
 ```
@@ -138,21 +137,24 @@ curl -X 'PUT' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "fname": "new-file.txt"
+  "fname": "old-file.txt",
+  "content": "I was updated for the first time in 15 years!"
 }'
 ```
 ```json
 {
-  "fname": "new-file.txt"
+  "fname": "old-file.txt",
+  "content": "I was updated for the first time in 15 years!"
 }
 ```
 `RESPONSE`
 ```json
 {
   "id": 1,
-  "fname": "new-file.txt",
-  "fsize": 0,
-  "mdt": "2024-11-26T00:23:45.442503"
+  "fname": "old-file.txt",
+  "fsize": 45,
+  "mdt": "2024-11-27T12:59:06.817540",
+  "content": "I was updated for the first time in 15 years!"
 }
 ```
 
