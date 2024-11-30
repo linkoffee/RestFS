@@ -164,3 +164,4 @@ cython_debug/
 # custom ignore files:
 *.db*
 storage/
+logs/
