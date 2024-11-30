@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.core.config import settings
+from app.core.config import settings_v1
 
 engine = create_engine(
-    settings.DB_URL,
+    settings_v1.DB_URL,
     connect_args={'check_same_thread': False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
