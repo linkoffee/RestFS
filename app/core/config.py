@@ -26,7 +26,7 @@ class Settings:
             'log_file_app', 'restfs-app.log'
         )
         self.LOG_FILE_SQLALCHEMY = logging_config.get(
-            'lof_file_sqlalchemy', 'sqlalchemy.log'
+            'log_file_sqlalchemy', 'sqlalchemy.log'
         )
         self.MAX_LOG_FILE_SIZE = int(
             logging_config.get('max_log_file_size', 10485760)
