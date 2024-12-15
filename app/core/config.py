@@ -19,9 +19,13 @@ class Settings:
         logging_config = self.config['logging']
         core_dir = os.path.abspath(os.path.dirname(__file__))
         self.LOG_LEVEL = logging_config.get('log_level', 'INFO')
+        self.LOG_DATEFMT = logging_config.get(
+            'log_datefmt', '%d/%m/%y %H:%M:%S'
+        )
         self.LOG_DIR = os.path.join(
             core_dir, logging_config.get('log_dir', 'logs')
         )
+        os.makedirs(self.LOG_DIR, exist_ok=True)
         self.LOG_FILE_APP = logging_config.get(
             'log_file_app', 'restfs-app.log'
         )
@@ -32,8 +36,6 @@ class Settings:
             logging_config.get('max_log_file_size', 10485760)
         )
         self.BACKUP_COUNT = int(logging_config.get('backup_count', 3))
-
-        os.makedirs(self.LOG_DIR, exist_ok=True)
 
     def load_app_settings(self):
         """Loading application settings for a specific API version."""
@@ -59,6 +61,9 @@ class Settings:
         """Loading Sqlalchemy settings."""
         sqlalchemy_config = self.config['sqlalchemy']
         self.SQLALCHEMY_LOG_LEVEL = sqlalchemy_config.get('log_level', 'INFO')
+        self.SQLALCHEMY_LOG_DATEFMT = sqlalchemy_config.get(
+            'log_datefmt', '%d/%m/%y %H:%M:%S'
+        )
         self.SQLALCHEMY_ECHO = sqlalchemy_config.getboolean('echo', False)
 
     def setup_storage(self):
