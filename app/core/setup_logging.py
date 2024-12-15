@@ -6,14 +6,7 @@ from app.core.config import settings_v1, Settings
 
 
 def setup_app_logging(settings: Settings):
-    """Configuring logging based on the settings passed.
-
-    `Args`:
-        **settings (Settings)**: App configuration object
-
-    `Returns`:
-        **logger (Logger)**: logger object configured with app settings
-    """
+    """Configuring logging based on the settings passed."""
     log_file = os.path.join(settings.LOG_DIR, settings.LOG_FILE_APP)
     handler = RotatingFileHandler(
         log_file,
@@ -21,7 +14,8 @@ def setup_app_logging(settings: Settings):
         backupCount=settings.BACKUP_COUNT,
     )
     formatter = logging.Formatter(
-        '[%(asctime)s][%(levelname)s][%(message)s][%(filename)s][%(lineno)s]'
+        '%(asctime)s %(levelname)s %(module)s.%(funcName)s %(message)s',
+        datefmt=settings.LOG_DATEFMT
     )
     handler.setFormatter(formatter)
 
@@ -33,11 +27,7 @@ def setup_app_logging(settings: Settings):
 
 
 def setup_sqlalchemy_logging(settings: Settings):
-    """Configuring SQLAlchemy logging based on the settings passed.
-
-    `Args`:
-        **setting (Settings)**: App configuration object
-    """
+    """Configuring SQLAlchemy logging based on the settings passed."""
     sa_log_file = os.path.join(settings.LOG_DIR, settings.LOG_FILE_SQLALCHEMY)
     handler = RotatingFileHandler(
         sa_log_file,
@@ -45,7 +35,8 @@ def setup_sqlalchemy_logging(settings: Settings):
         backupCount=settings.BACKUP_COUNT,
     )
     formatter = logging.Formatter(
-        '[%(asctime)s][%(levelname)s][%(message)s]'
+        '%(asctime)s %(levelname)s %(module)s.%(funcName)s %(message)s',
+        datefmt=settings.SQLALCHEMY_LOG_DATEFMT
     )
     handler.setFormatter(formatter)
 
